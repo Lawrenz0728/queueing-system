@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>Members Services Queueing System</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+:root{--bg:#03183d;--panel:#eafcff;--line:#00d9ff;--blue:#006cff;--green:#12bd45;--red:#ef174b;--text:#071653;--muted:#55719c}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;font-weight:700;color:#fff;background:radial-gradient(circle at 15% 5%,#08d8ff 0,#0676dc 22%,#041e62 58%,#020b29 100%)}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:42px 42px}.wrap{width:min(980px,94vw);margin:auto;position:relative}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 0}.brand{display:flex;align-items:center;gap:10px}.logo{width:52px;height:52px;display:grid;place-items:center;border:3px solid #fff;border-radius:14px;background:linear-gradient(145deg,#057cff,#08277d);box-shadow:0 0 20px #00d9ff;font-size:25px}.brand h1{font-size:20px;margin:0;text-shadow:2px 2px #071653}.sub{font-size:10px;letter-spacing:.12em;color:#dffbff;margin-top:4px}.live{border:2px solid #00eaff;padding:9px 12px;border-radius:12px;background:#05227dcc;font-size:11px}.live i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#28ff4e;margin-right:5px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:24px}.card{background:var(--panel);color:var(--text);border:3px solid var(--line);border-radius:15px;padding:16px;box-shadow:0 0 22px #00cfff88,0 12px 25px #00123f99}.card h2{margin:0 0 12px;padding:11px;border-radius:9px;background:linear-gradient(90deg,#0341a9,#007eea);color:#fff;font-size:14px;text-transform:uppercase;letter-spacing:.07em;text-shadow:2px 2px #031b63}.services-list{display:grid;gap:8px;margin-top:6px}.service-option{display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #75dfff;border-radius:9px;background:#fff;cursor:pointer;color:var(--text);font-size:12px}.service-option input{width:19px;height:19px;accent-color:#087fff}.service-option:has(input:checked){border-color:#006cff;background:#e2f4ff;box-shadow:0 0 0 2px #00cfff33}label{display:block;color:#0a246d;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin:10px 0 4px}input,select,button{width:100%;padding:11px;border:2px solid #75dfff;border-radius:9px;font:inherit;color:var(--text);background:#fff}input:focus,select:focus{outline:none;border-color:#006cff;box-shadow:0 0 0 3px #00cfff44}button{cursor:pointer}.primary{background:linear-gradient(135deg,#00d83f,#12a928);border-color:#00a832;color:#fff;text-shadow:1px 1px #07531c}.secondary{background:linear-gradient(135deg,#087fff,#063bb5);border-color:#00d9ff;color:#fff;text-shadow:1px 1px #05226b}.notice{display:none;padding:10px;border-radius:9px;margin-top:10px;font-size:11px}.notice.show{display:block}.error{background:#ffe3ea;color:#b00035;border:2px solid #ff6385}.success{background:#d9ffe3;color:#08752a;border:2px solid #11bd45}.ticket{display:none;text-align:center}.ticket.show{display:block}.ticketNo{font-size:64px;letter-spacing:.08em;color:#006cff;margin:15px 0 4px;text-shadow:1px 2px #b4f4ff}.ticketStatus{display:inline-block;padding:6px 12px;border-radius:18px;background:#8d8d8d;color:#fff;font-size:11px}.queueStats{display:flex;justify-content:center;gap:10px;margin:12px 0}.queueStats>div{flex:1;max-width:145px;background:#d8f8ff;border:2px solid #8cecff;border-radius:10px;padding:8px 5px}.queueStats strong{display:block;font-size:25px;color:#006cff}.queueStats span{display:block;font-size:9px;color:#55719c;margin-top:3px}.ticketInfo{font-size:11px;line-height:1.8;color:#55719c;margin:10px 0}.qr{display:flex;justify-content:center;margin:12px 0}.qr canvas{max-width:100%;height:auto;border:8px solid #fff;border-radius:8px}.passcode{font-size:23px;letter-spacing:.18em;color:#071653;background:#d8f8ff;border:2px dashed #00aeea;padding:10px;border-radius:9px}.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1}.small{font-size:9px;color:#55719c;margin-top:10px;line-height:1.5}.history{margin-top:12px}.historyItem{border:2px solid #8cecff;border-radius:9px;padding:9px;margin-top:7px;background:#fff;font-size:11px}.empty{color:#55719c;text-align:center;padding:20px;font-size:11px}.footer{text-align:center;font-size:9px;color:#d7faff;padding:0 0 20px}.hidden{display:none!important}@media(max-width:760px){.grid{grid-template-columns:1fr}.top{align-items:flex-start}.brand h1{font-size:15px}.live{font-size:9px;padding:7px}.ticketNo{font-size:52px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div class="brand"><div class="logo">🔥</div><div><h1>MEMBERS SERVICES QUEUEING SYSTEM</h1><div class="sub">FAST • ORGANIZED • BETTER SERVICE</div></div></div>
+    <div class="live"><i></i><span id="connection">CONNECTING</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+    <section class="card" id="requestCard">
+      <h2>🎟 Get Queue Number</h2>
+      <form id="queueForm">
+        <label>Customer Name</label>
+        <input id="customerName" required maxlength="120" placeholder="Enter your full name">
+
+        <label>Services <span style="font-size:9px;text-transform:none;letter-spacing:0">(Select one or more)</span></label>
+        <div id="servicesList" class="services-list">
+          <div class="small">Loading services...</div>
+        </div>
+
+        <button class="primary" type="submit" id="submitBtn">Get Queue Number</button>
+        <div id="formNotice" class="notice"></div>
+      </form>
+      <div class="small">Please provide your name and select a service. Keep your queue number and passcode.</div>
+    </section>
+
+    <section class="card ticket" id="ticketCard">
+      <h2>✅ Your Queue Ticket</h2>
+      <div class="ticketNo" id="ticketNumber">A001</div>
+      <div class="ticketStatus" id="ticketStatus">WAITING</div>
+      <div class="queueStats" id="queueStats">
+        <div><strong id="inLineCount">—</strong><span>Customers in line</span></div>
+        <div><strong id="waitingCount">—</strong><span>Users waiting</span></div>
+      </div>
+      <div class="ticketInfo" id="ticketInfo"></div>
+      <div class="qr"><canvas id="qrCanvas" width="220" height="220"></canvas></div>
+      <div style="font-size:10px;color:#55719c;margin-bottom:5px">YOUR PASSCODE</div>
+      <div class="passcode" id="passcode">----</div>
+      <div class="actions">
+        <button class="primary" id="viewStatusBtn" type="button">🔎 View Ticket Status</button>
+      </div>
+      <div id="ticketNotice" class="notice"></div>
+    </section>
+  </div>
+
+  <section class="card history">
+    <h2>🔎 Check Queue Ticket</h2>
+    <label>Ticket Number</label>
+    <div style="display:flex;gap:8px">
+      <input id="lookupTicket" placeholder="Example: A001">
+      <button class="secondary" id="lookupBtn" style="width:130px">Check</button>
+    </div>
+    <div id="lookupNotice" class="notice"></div>
+    <div id="lookupResult" class="empty">Enter your ticket number to check its current status.</div>
+  </section>
+</main>
+<div class="wrap footer">MEMBERS SERVICES QUEUEING SYSTEM • CUSTOMER QUEUE PORTAL</div>
+
+<script>
+const SUPABASE_URL='https://szjvzbsmkowpqezrvbqo.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+const $=id=>document.getElementById(id);
+let services=[];
+let currentTicket=null;
+
+function notice(el,message,type='error'){el.textContent=message;el.className='notice show '+type}
+function clearNotice(el){el.textContent='';el.className='notice'}
+function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function randomPasscode(){return Math.floor(100000+Math.random()*900000).toString()}
+
+async function init(){
+  try{
+    const {data,error}=await db.from('queue_services').select('id,service_code,service_name').eq('is_active',true).order('service_name');
+    if(error) throw error;
+    // Always show the four approved Members Services options.
+    // Database IDs are used when available; null is accepted by the RPC
+    // function so the form remains usable even before the service SQL update
+    // has been executed.
+    const requestedServices = [
+      { service_code:'LOANS_MEMBERSHIP', service_name:'Loans and Membership' },
+      { service_code:'VISA_ENCODING', service_name:'Visa Encoding' },
+      { service_code:'NOTARIAL', service_name:'Notarial' },
+      { service_code:'PHOTOCOPY', service_name:'Photocopy' }
+    ];
+    services=requestedServices.map(item => {
+      const existing=(data||[]).find(s =>
+        s.service_code===item.service_code ||
+        s.service_name.toLowerCase()===item.service_name.toLowerCase()
+      );
+      return {
+        id: existing ? existing.id : null,
+        service_code: item.service_code,
+        service_name: item.service_name
+      };
+    });
+    $('servicesList').innerHTML=services.map((s,index)=>
+      `<label class="service-option">
+        <input type="checkbox" name="services" value="${s.service_code}" data-name="${escapeHtml(s.service_name)}" data-id="${s.id||''}">
+        <span>${escapeHtml(s.service_name)}</span>
+      </label>`
+    ).join('');
+    $('connection').textContent='ONLINE';
+  }catch(error){
+    $('connection').textContent='OFFLINE';
+    $('servicesList').innerHTML='<div class="small">Unable to load services.</div>';
+    notice($('formNotice'),'Could not load queue services. Check your Supabase connection and policies.');
+    console.error(error);
+  }
+}
+
+async function createTicket(event){
+  event.preventDefault();
+  clearNotice($('formNotice'));
+  $('submitBtn').disabled=true;
+  $('submitBtn').textContent='Creating...';
+  try{
+    const selectedInputs=[...document.querySelectorAll('input[name="services"]:checked')];
+    if(!selectedInputs.length) throw new Error('Please select at least one service.');
+    const selectedServices=selectedInputs.map(input=>({
+      id: input.dataset.id || null,
+      service_name: input.dataset.name
+    }));
+    const serviceNames=selectedServices.map(service=>service.service_name);
+    const {data,error}=await db.rpc('create_queue_ticket_multi',{
+      p_customer_name:$('customerName').value.trim(),
+      p_service_ids:selectedServices.map(service=>service.id),
+      p_service_names:serviceNames,
+      p_customer_phone:null,
+      p_customer_email:null,
+      p_customer_notes:null,
+      p_priority:'Regular',
+      p_ticket_prefix:'A'
+    });
+    if(error) throw error;
+
+    currentTicket=Array.isArray(data)?data[0]:data;
+    if(!currentTicket) throw new Error('Ticket was not returned by Supabase.');
+
+    // The database table currently stores a QR token. The displayed passcode
+    // is generated locally for the customer-facing ticket.
+    const passcode=randomPasscode();
+    currentTicket.client_passcode=passcode;
+    renderTicket(currentTicket);
+    $('requestCard').classList.add('hidden');
+    $('ticketCard').classList.add('show');
+    $('queueForm').reset();
+  }catch(error){
+    console.error(error);
+    notice($('formNotice'),error.message||'Unable to create queue ticket.');
+  }finally{
+    $('submitBtn').disabled=false;
+    $('submitBtn').textContent='Get Queue Number';
+  }
+}
+
+async function loadQueueStats(){
+  const {data,error}=await db.rpc('get_queue_stats');
+  if(error){
+    console.error(error);
+    $('inLineCount').textContent='—';
+    $('waitingCount').textContent='—';
+    return;
+  }
+  const stats=Array.isArray(data)?data[0]:data;
+  $('inLineCount').textContent=stats?.in_line_count ?? 0;
+  $('waitingCount').textContent=stats?.waiting_count ?? 0;
+}
+
+function renderTicket(ticket){
+  $('ticketNumber').textContent=ticket.ticket_number;
+  $('ticketStatus').textContent=(ticket.status||'Waiting').toUpperCase();
+  $('ticketInfo').innerHTML=`Customer: <b>${escapeHtml(ticket.customer_name)}</b><br>Service: <b>${escapeHtml(ticket.service_name||'—')}</b><br>Joined: ${new Date(ticket.joined_at).toLocaleString()}`;
+  $('passcode').textContent=ticket.client_passcode||'------';
+  loadQueueStats();
+  const statusUrl = new URL(window.location.href);
+  statusUrl.search = '';
+  statusUrl.hash = '';
+  statusUrl.searchParams.set('ticket', ticket.ticket_number);
+  statusUrl.searchParams.set('token', ticket.qr_token);
+  generateQRCode(statusUrl.toString());
+}
+
+function generateQRCode(payload){
+  const canvas = $('qrCanvas');
+  if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
+    window.QRCode.toCanvas(canvas, payload, {width:220, margin:1}, error=>{
+      if(error) console.error(error);
+    });
+    return;
+  }
+
+  // Fallback when the QR library CDN is blocked or unavailable.
+  const image = new Image();
+  image.alt = 'Queue ticket QR code';
+  image.width = 220;
+  image.height = 220;
+  image.style.border = '8px solid white';
+  image.style.borderRadius = '8px';
+  image.onload = () => {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  };
+  image.onerror = () => {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#b00035';
+    ctx.textAlign = 'center';
+    ctx.fillText('QR unavailable', canvas.width / 2, canvas.height / 2);
+  };
+  image.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='
+    + encodeURIComponent(payload);
+}
+
+async function lookupTicket(){
+  clearNotice($('lookupNotice'));
+  const number=$('lookupTicket').value.trim().toUpperCase();
+  if(!number){notice($('lookupNotice'),'Enter a ticket number.');return}
+  const {data,error}=await db.from('queue_tickets').select('ticket_number,customer_name,service_name,status,priority,queue_date,joined_at,called_at,counter_id').eq('ticket_number',number).maybeSingle();
+  if(error){notice($('lookupNotice'),'Unable to check ticket status.');console.error(error);return}
+  if(!data){$('lookupResult').className='empty';$('lookupResult').textContent='No ticket was found with that number.';return}
+  $('lookupResult').className='historyItem';
+  $('lookupResult').innerHTML=`<b>${escapeHtml(data.ticket_number)}</b> — ${escapeHtml(data.status)}<br>Customer: ${escapeHtml(data.customer_name)}<br>Service: ${escapeHtml(data.service_name||'—')}<br>Priority: ${escapeHtml(data.priority)}<br>Joined: ${new Date(data.joined_at).toLocaleString()}`;
+}
+
+async function lookupByToken(token){
+  clearNotice($('lookupNotice'));
+  const {data,error}=await db.rpc('get_queue_ticket_status',{p_qr_token:token});
+  if(error){
+    notice($('lookupNotice'),'Unable to load ticket status. Please try again.');
+    console.error(error);
+    return;
+  }
+  const ticket=Array.isArray(data)?data[0]:data;
+  if(!ticket){
+    notice($('lookupNotice'),'Ticket not found or QR code is invalid.');
+    return;
+  }
+  $('lookupTicket').value=ticket.ticket_number;
+  $('lookupResult').className='historyItem';
+  $('lookupResult').innerHTML=`<div style="font-size:26px;color:#06c;margin-bottom:6px">${escapeHtml(ticket.ticket_number)}</div><b>Status: ${escapeHtml(ticket.status)}</b><br>Customer: ${escapeHtml(ticket.customer_name)}<br>Services: ${escapeHtml(ticket.service_name||'—')}<br>Joined: ${new Date(ticket.joined_at).toLocaleString()}`;
+  $('lookupResult').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function printTicket(){
+  if(!currentTicket)return;
+  const w=window.open('','_blank','width=480,height=700');
+  w.document.write(`<html><head><title>${currentTicket.ticket_number}</title><style>body{font-family:Arial;text-align:center;padding:25px}h1{font-size:54px;margin:20px 0;color:#06c}.code{font-size:25px;letter-spacing:6px;border:2px dashed #06c;padding:12px}p{line-height:1.7}</style></head><body><h2>MEMBERS SERVICES QUEUEING SYSTEM</h2><h1>${escapeHtml(currentTicket.ticket_number)}</h1><p>Customer: ${escapeHtml(currentTicket.customer_name)}<br>Service: ${escapeHtml(currentTicket.service_name||'—')}<br>Status: ${escapeHtml(currentTicket.status||'Waiting')}</p><div class="code">${escapeHtml(currentTicket.client_passcode||'------')}</div><p>Keep this ticket for checking your queue status.</p><script>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+$('queueForm').addEventListener('submit',createTicket);
+$('lookupBtn').addEventListener('click',lookupTicket);
+$('lookupTicket').addEventListener('keydown',e=>{if(e.key==='Enter')lookupTicket()});
+$('viewStatusBtn').addEventListener('click',async()=>{
+  if(currentTicket){
+    $('lookupTicket').value=currentTicket.ticket_number;
+    if(currentTicket.qr_token){
+      await lookupByToken(currentTicket.qr_token);
+    }else{
+      await lookupTicket();
+    }
+    $('lookupResult').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+});
+const urlParams=new URLSearchParams(window.location.search);
+const qrToken=urlParams.get('token');
+if(qrToken) lookupByToken(qrToken);
+setInterval(loadQueueStats, 15000);
+init();
+</script>
+</body>
+</html>

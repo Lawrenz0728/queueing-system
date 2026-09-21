@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Members Services Queueing System - TV Display</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#06245c;--blue:#086fe0;--cyan:#00d9ff;--panel:#eefcff;--text:#08245d;--green:#08b94a;--orange:#f47708;--purple:#6238c7}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(125deg,#09bfe7 0%,#0867bd 35%,#061b51 100%);font-family:Arial,Helvetica,sans-serif;color:#fff;overflow-x:hidden}.wrap{width:96%;max-width:1900px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:25px;padding:20px 0 14px}.brand{display:flex;align-items:center;gap:18px}.logo{width:68px;height:68px;border:3px solid #fff;border-radius:18px;display:grid;place-items:center;font-size:35px;background:linear-gradient(145deg,#078bff,#08216d);box-shadow:0 0 22px #00eaff}.brand h1{font-size:clamp(24px,2.7vw,48px);line-height:1;margin:0;text-shadow:3px 3px #071b55}.sub{font-size:clamp(11px,1vw,18px);letter-spacing:.14em;margin-top:8px;color:#d8fbff}.topRight{text-align:right}.date{font-size:clamp(16px,1.5vw,28px);font-weight:700}.clock{font-size:clamp(28px,3.4vw,60px);font-weight:900;margin-top:4px}.motto{font-size:clamp(13px,1.3vw,24px);color:#a9f8ff;font-style:italic;margin-top:4px}.layout{display:grid;grid-template-columns:minmax(300px,.78fr) minmax(600px,1.7fr);gap:24px}.panel{background:var(--panel);border:4px solid var(--cyan);border-radius:22px;overflow:hidden;box-shadow:0 0 24px #00d9ff66;color:var(--text)}.panelTitle{padding:18px 24px;background:linear-gradient(90deg,#00a98f,#0089e8);font-size:clamp(22px,2vw,38px);font-weight:900;text-align:center;letter-spacing:.04em}.nowBody{padding:25px;text-align:center}.nowTicket{font-size:clamp(76px,9vw,180px);font-weight:900;line-height:1;color:#086cf1;letter-spacing:.04em;margin:10px 0 22px}.nowName{background:#d4f5ff;border-radius:14px;padding:18px;font-size:clamp(23px,2vw,40px);font-weight:900}.nowService{font-size:clamp(18px,1.5vw,30px);margin:25px 0;font-weight:900}.counter{display:inline-block;background:linear-gradient(135deg,#087d91,#063c64);color:#fff;border-radius:14px;padding:15px 32px;font-size:clamp(25px,2vw,42px);font-weight:900}.emptyNow{font-size:clamp(28px,2.5vw,48px);padding:100px 10px;color:#6482a7}.tableWrap{padding:0 15px 15px}.queueTable{width:100%;border-collapse:collapse;font-size:clamp(14px,1.25vw,27px)}.queueTable th{background:#0760b9;color:#fff;padding:15px 12px;text-align:left;white-space:nowrap}.queueTable td{padding:12px;background:#fff;border-bottom:2px solid #d2edf7}.queueTable tr:nth-child(even) td{background:#e3f5ff}.status{display:inline-block;padding:8px 13px;border-radius:8px;color:#fff;font-weight:900;font-size:.8em;white-space:nowrap}.waiting{background:#087be7}.ongoing{background:var(--orange)}.completed{background:#079744}.skipped,.cancelled{background:#8c8c8c}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin:24px 0}.summaryCard{border:3px solid #00d9ff;border-radius:18px;text-align:center;padding:15px 8px;box-shadow:0 0 20px #00d9ff44}.summaryCard strong{display:block;font-size:clamp(38px,4vw,75px);line-height:1}.summaryCard span{display:block;font-size:clamp(16px,1.5vw,28px);font-weight:900;margin-top:8px}.sWaiting{background:linear-gradient(135deg,#087ce9,#0750b8)}.sOngoing{background:linear-gradient(135deg,#f58b10,#ce5800)}.sCompleted{background:linear-gradient(135deg,#12bd54,#07833c)}.sTotal{background:linear-gradient(135deg,#7648df,#4c22a5)}.footer{display:flex;justify-content:space-between;gap:20px;padding:0 8px 18px;font-size:clamp(12px,1vw,20px);letter-spacing:.12em}.connection{position:fixed;right:15px;bottom:8px;font-size:11px;opacity:.7}@media(max-width:1100px){.layout{grid-template-columns:1fr}.nowBody{padding:18px}.nowTicket{font-size:100px}.summary{gap:10px}.queueTable{font-size:14px}}@media(max-width:650px){.top{align-items:flex-start}.logo{width:48px;height:48px;font-size:25px}.brand{gap:9px}.topRight{display:none}.summary{grid-template-columns:repeat(2,1fr)}.tableWrap{overflow-x:auto}.queueTable{min-width:650px}.footer{font-size:9px;letter-spacing:.04em}}
+</style>
+</head>
+<body>
+<header class="wrap top">
+  <div class="brand"><div class="logo">🔥</div><div><h1>MEMBERS SERVICES<br>QUEUEING SYSTEM</h1><div class="sub">FAST • ORGANIZED • BETTER SERVICE</div></div></div>
+  <div class="topRight"><div class="date" id="date">Loading date...</div><div class="clock" id="clock">--:--</div><div class="motto">We Serve with a Smile ☺</div></div>
+</header>
+
+<main class="wrap">
+  <section class="layout">
+    <article class="panel">
+      <div class="panelTitle">🔊 NOW SERVING</div>
+      <div class="nowBody" id="nowBody"><div class="emptyNow">No customer is being served.</div></div>
+    </article>
+    <article class="panel">
+      <div class="panelTitle" style="background:linear-gradient(90deg,#0750a9,#087ea9)">👥 QUEUE LIST (TODAY)</div>
+      <div class="tableWrap"><table class="queueTable">
+        <thead><tr><th>TICKET</th><th>CUSTOMER</th><th>SERVICE</th><th>COUNTER</th><th>STATUS</th></tr></thead>
+        <tbody id="queueBody"><tr><td colspan="5" style="text-align:center">Loading queue...</td></tr></tbody>
+      </table></div>
+    </article>
+  </section>
+
+  <section class="summary">
+    <div class="summaryCard sWaiting"><strong id="waitingCount">0</strong><span>WAITING</span></div>
+    <div class="summaryCard sOngoing"><strong id="ongoingCount">0</strong><span>ONGOING</span></div>
+    <div class="summaryCard sCompleted"><strong id="completedCount">0</strong><span>COMPLETED</span></div>
+    <div class="summaryCard sTotal"><strong id="totalCount">0</strong><span>TOTAL TODAY</span></div>
+  </section>
+  <footer class="footer"><span>MEMBERS SERVICES COOPERATIVE</span><span>Together for a Brighter Tomorrow 🌱</span></footer>
+</main>
+<div class="connection" id="connection">CONNECTING</div>
+
+<script>
+const SUPABASE_URL='https://szjvzbsmkowpqezrvbqo.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);
+let tickets=[];
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function status(v){let s=String(v||'Waiting').toLowerCase();if(['called','serving','ongoing'].includes(s))return'Ongoing';if(['completed','done'].includes(s))return'Completed';if(['skipped','cancelled'].includes(s))return s==='cancelled'?'Cancelled':'Skipped';return'Waiting'}
+function cls(v){return status(v).toLowerCase()}
+function localDate(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function counter(t){return t.counter_name||t.counter||t.counter_id||'—'}
+function updateClock(){let d=new Date();$('date').textContent=d.toLocaleDateString('en-PH',{weekday:'long',month:'long',day:'numeric',year:'numeric'});$('clock').textContent=d.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function render(){
+  const waiting=tickets.filter(t=>status(t.status)==='Waiting'),ongoing=tickets.filter(t=>status(t.status)==='Ongoing'),completed=tickets.filter(t=>status(t.status)==='Completed');
+  $('waitingCount').textContent=waiting.length;$('ongoingCount').textContent=ongoing.length;$('completedCount').textContent=completed.length;$('totalCount').textContent=tickets.length;
+  const current=ongoing.slice().sort((a,b)=>new Date(a.called_at||0)-new Date(b.called_at||0))[0];
+  $('nowBody').innerHTML=current?`<div class="nowTicket">${esc(current.ticket_number)}</div><div class="nowName">👤 ${esc(current.customer_name||'Customer')}</div><div class="nowService">⚙ ${esc(current.service_name||'Service')}</div><div class="counter">COUNTER ${esc(counter(current))}</div>`:'<div class="emptyNow">No customer is being served.</div>';
+  const sorted=[...ongoing,...waiting,...completed,...tickets.filter(t=>['Skipped','Cancelled'].includes(status(t.status)))];
+  $('queueBody').innerHTML=sorted.map(t=>`<tr><td><b>${esc(t.ticket_number)}</b></td><td>${esc(t.customer_name)}</td><td>${esc(t.service_name||'—')}</td><td>${esc(counter(t))}</td><td><span class="status ${cls(t.status)}">${esc(status(t.status).toUpperCase())}</span></td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center">No customers found for today.</td></tr>';
+}
+async function load(){
+  const {data,error}=await db.from('queue_tickets').select('*').limit(1000);
+  if(error){$('connection').textContent='DATABASE ERROR';console.error(error);return}
+  const today=localDate();
+  tickets=(data||[]).filter(t=>{
+    const raw=t.queue_date||t.joined_at||t.created_at;
+    if(!raw)return true;
+    if(t.queue_date&&String(t.queue_date).slice(0,10)===today)return true;
+    const d=new Date(raw);
+    return !Number.isNaN(d.getTime())&&d.toLocaleDateString('en-CA')===today;
+  });
+  $('connection').textContent='ONLINE • UPDATED '+new Date().toLocaleTimeString();
+  render();
+}
+updateClock();setInterval(updateClock,1000);load();setInterval(load,10000);
+</script>
+</body>
+</html>
