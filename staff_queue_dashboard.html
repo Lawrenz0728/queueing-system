@@ -62,71 +62,45 @@ function localDate(){
 async function loadTickets(){
   $('queueDate').textContent='Date: '+new Date().toLocaleDateString('en-PH');
   const noticeEl=$('mainNotice');
-
   try{
-    // Do not order by a possibly different column name.
-    const result=await db.from('queue_tickets').select('*').limit(1000);
-    const data=result.data;
-    const error=result.error;
-
-    if(error){
-      console.error('Supabase queue_tickets error:',error);
-      notice(noticeEl,'Database error: '+error.message);
-      tickets=[];
-      render();
-      return;
-    }
-
+    const {data,error}=await db.from('queue_tickets').select('*').order('joined_at',{ascending:false}).limit(1000);
+    if(error){console.error(error);notice(noticeEl,'Database error: '+error.message);tickets=[];render();return;}
     tickets=Array.isArray(data)?data:[];
-    noticeEl.className='notice show';
-    noticeEl.style.background='#d9ffe3';
-    noticeEl.style.color='#08752a';
-    noticeEl.style.border='2px solid #11bd45';
-    noticeEl.textContent='Connected to Supabase. Records received: '+tickets.length;
-
+    noticeEl.className='notice';
+    noticeEl.textContent='Connected. Records received: '+tickets.length;
     render();
-  }catch(error){
-    console.error('Dashboard loading error:',error);
-    notice(noticeEl,'Dashboard error: '+(error.message||error));
-    tickets=[];
-    render();
-  }
+  }catch(error){console.error(error);notice(noticeEl,'Dashboard error: '+(error.message||error));tickets=[];render();}
 }
-function displayStatus(status){
-  const s=String(status||'Waiting').toLowerCase();
+function displayStatus(value){
+  const s=String(value||'Waiting').toLowerCase();
   if(s==='called'||s==='serving'||s==='ongoing') return 'Ongoing';
   if(s==='completed'||s==='done') return 'Completed';
   if(s==='skipped'||s==='cancelled') return s==='cancelled'?'Cancelled':'Skipped';
   return 'Waiting';
 }
-function statusClass(status){
-  const s=displayStatus(status);
-  return s==='Completed'?'done':s==='Skipped'||s==='Cancelled'?'cancelled':s.toLowerCase();
+function statusClass(value){
+  const s=displayStatus(value);
+  if(s==='Completed') return 'done';
+  if(s==='Skipped'||s==='Cancelled') return 'cancelled';
+  return s.toLowerCase();
 }
 function render(){
-  let search=$('search').value.toLowerCase(),filter=$('statusFilter').value;
-  let filtered=tickets.filter(t=>{
+  const search=$('search').value.toLowerCase().trim();
+  const filter=$('statusFilter').value;
+  const filtered=tickets.filter(t=>{
     const shownStatus=displayStatus(t.status);
-    return (!filter||filter===shownStatus||(
-      filter==='Done'&&shownStatus==='Completed'
-    ))&&(!search||`${t.ticket_number} ${t.customer_name} ${t.service_name}`.toLowerCase().includes(search));
+    const text=`${t.ticket_number||''} ${t.customer_name||''} ${t.service_name||''}`.toLowerCase();
+    return (!filter||filter===shownStatus||(filter==='Done'&&shownStatus==='Completed'))&&(!search||text.includes(search));
   });
-
   $('waitingCount').textContent=tickets.filter(t=>displayStatus(t.status)==='Waiting').length;
   $('ongoingCount').textContent=tickets.filter(t=>displayStatus(t.status)==='Ongoing').length;
   $('doneCount').textContent=tickets.filter(t=>displayStatus(t.status)==='Completed').length;
   $('totalCount').textContent=tickets.length;
-
-  $('queueBody').innerHTML=filtered.map(t=>`<tr>
-<td><b>${esc(t.ticket_number)}</b></td><td>${esc(t.customer_name)}</td><td>${esc(t.service_name||'—')}</td>
-<td><span class="pill ${statusClass(t.status)}">${esc(displayStatus(t.status))}</span></td>
-<td>${(t.joined_at||t.created_at)?new Date(t.joined_at||t.created_at).toLocaleTimeString():'—'}</td>
-<td>${esc(counters.find(c=>c.id===t.counter_id)?.counter_name||t.counter_id||'—')}</td>
-<td><div class="actions">
-<button class="blue" onclick="setStatus('${t.id}','Serving')">Call</button>
-<button class="primary" onclick="setStatus('${t.id}','Completed')">Complete</button>
-<button class="danger" onclick="setStatus('${t.id}','Skipped')">Skip</button>
-</div></td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center">No queue tickets found.</td></tr>';
+  $('queueBody').innerHTML=filtered.map(t=>{
+    const joined=t.joined_at||t.created_at;
+    const counter=counters.find(c=>c.id===t.counter_id);
+    return `<tr><td><b>${esc(t.ticket_number)}</b></td><td>${esc(t.customer_name)}</td><td>${esc(t.service_name||'—')}</td><td><span class="pill ${statusClass(t.status)}">${esc(displayStatus(t.status))}</span></td><td>${joined?new Date(joined).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}):'—'}</td><td>${esc(counter?.counter_name||t.counter_id||'—')}</td><td><div class="actions"><button class="blue" onclick="setStatus('${t.id}','Serving')">Call</button><button class="primary" onclick="setStatus('${t.id}','Completed')">Complete</button><button class="danger" onclick="setStatus('${t.id}','Skipped')">Skip</button></div></td></tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center">No queue tickets found.</td></tr>';
 }
 async function setStatus(id,status){
   let patch={status};
