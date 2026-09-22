@@ -10,7 +10,10 @@
 .card{width:min(430px,100%);background:#fff;border:3px solid #13d9ff;border-radius:22px;padding:32px;box-shadow:0 15px 45px #001a5555;color:#14264b}
 .logo{width:76px;height:76px;margin:0 auto 15px;display:grid;place-items:center;border-radius:18px;background:#0754b9;color:#fff;font-size:40px;border:2px solid #13d9ff}
 h1{text-align:center;color:#0754b9;font-size:25px;margin:0 0 8px}.sub{text-align:center;color:#60708b;font-size:13px;margin-bottom:25px}
-label{display:block;font-weight:700;font-size:13px;margin:15px 0 7px}input{width:100%;padding:13px;border:1px solid #8cb8db;border-radius:9px;font-size:15px}button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;background:#0754b9;color:#fff;font-weight:700;font-size:15px;cursor:pointer}button:hover{filter:brightness(1.1)}#message{display:none;margin-top:15px;padding:11px;border-radius:8px;background:#ffe0e7;color:#9b1639;font-size:13px;line-height:1.4}.footer{text-align:center;color:#71809a;font-size:11px;margin-top:20px}
+label{display:block;font-weight:700;font-size:13px;margin:15px 0 7px}input{width:100%;padding:13px;border:1px solid #8cb8db;border-radius:9px;font-size:15px}button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;background:#0754b9;color:#fff;font-weight:700;font-size:15px;cursor:pointer}button:hover{filter:brightness(1.1)}button:disabled{opacity:.65;cursor:not-allowed}
+#message{display:none;margin-top:15px;padding:11px;border-radius:8px;background:#ffe0e7;color:#9b1639;font-size:13px;line-height:1.4}#message.success{background:#def8e7;color:#176b3a}
+#resendBtn{display:none;background:#0b8fbd;margin-top:10px;font-size:13px;padding:11px}
+.links{text-align:center;margin-top:18px;font-size:13px}.links a{color:#0754b9;font-weight:700;text-decoration:none}.links a:hover{text-decoration:underline}.footer{text-align:center;color:#71809a;font-size:11px;margin-top:20px}
 </style>
 </head>
 <body>
@@ -24,8 +27,10 @@ label{display:block;font-weight:700;font-size:13px;margin:15px 0 7px}input{width
 <label for="password">Password</label>
 <input id="password" type="password" placeholder="Enter your password" required autocomplete="current-password">
 <button id="loginBtn" type="submit">SIGN IN</button>
-<div id="message"></div>
+<div id="message" role="alert"></div>
+<button id="resendBtn" type="button">RESEND CONFIRMATION EMAIL</button>
 </form>
+<div class="links">New staff? <a href="staff_registration.html">Register here</a></div>
 <div class="footer">Authorized staff only</div>
 </div>
 <script>
@@ -33,14 +38,67 @@ const SUPABASE_URL='https://szjvzbsmkowpqezrvbqo.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const msg=document.getElementById('message');
-function show(text){msg.textContent=text;msg.style.display='block';}
-(async()=>{const {data:{session}}=await db.auth.getSession();if(session)location.replace('staff_queue_dashboard.html');})();
+const resendBtn=document.getElementById('resendBtn');
+const loginBtn=document.getElementById('loginBtn');
+const emailInput=document.getElementById('email');
+const passwordInput=document.getElementById('password');
+const REDIRECT_URL=new URL('staff_login.html',window.location.href).href;
+
+function show(text,success=false){
+  msg.textContent=text;
+  msg.className=success?'success':'';
+  msg.style.display='block';
+}
+function isUnconfirmedError(error){
+  const t=(error?.message||'').toLowerCase();
+  return t.includes('email not confirmed') || t.includes('email_not_confirmed');
+}
+
+(async()=>{
+  const {data:{session}}=await db.auth.getSession();
+  if(session) location.replace('staff_queue_dashboard.html');
+})();
+
 document.getElementById('loginForm').addEventListener('submit',async e=>{
- e.preventDefault();msg.style.display='none';
- const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='SIGNING IN...';
- const {error}=await db.auth.signInWithPassword({email:document.getElementById('email').value.trim(),password:document.getElementById('password').value});
- if(error){show('Login failed: '+error.message);btn.disabled=false;btn.textContent='SIGN IN';return;}
- location.replace('staff_queue_dashboard.html');
+  e.preventDefault();
+  msg.style.display='none';
+  resendBtn.style.display='none';
+  loginBtn.disabled=true;
+  loginBtn.textContent='SIGNING IN...';
+
+  const email=emailInput.value.trim();
+  const password=passwordInput.value;
+  const {error}=await db.auth.signInWithPassword({email,password});
+
+  if(error){
+    show('Login failed: '+error.message);
+    if(isUnconfirmedError(error)) resendBtn.style.display='block';
+    loginBtn.disabled=false;
+    loginBtn.textContent='SIGN IN';
+    return;
+  }
+  location.replace('staff_queue_dashboard.html');
+});
+
+resendBtn.addEventListener('click',async()=>{
+  const email=emailInput.value.trim();
+  if(!email){show('Please enter your staff email first.');return;}
+
+  resendBtn.disabled=true;
+  resendBtn.textContent='SENDING...';
+  const {error}=await db.auth.resend({
+    type:'signup',
+    email,
+    options:{emailRedirectTo:REDIRECT_URL}
+  });
+
+  if(error){
+    show('Could not resend confirmation email: '+error.message);
+  }else{
+    show('Confirmation email sent. Please check your inbox and spam/junk folder.',true);
+  }
+  resendBtn.disabled=false;
+  resendBtn.textContent='RESEND CONFIRMATION EMAIL';
 });
 </script>
 </body>
