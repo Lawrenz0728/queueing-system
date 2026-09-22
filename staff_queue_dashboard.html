@@ -1,348 +1,78 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Members Services Queueing System | Staff Dashboard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Members Services Queueing System — Staff Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
-  --bg1:#08b9ec;--bg2:#0754b9;--bg3:#061b55;--cyan:#13d9ff;
-  --panel:#0754b9;--text:#fff;--light:#f3fbff;--ink:#14264b;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:var(--text);
-  background:linear-gradient(120deg,var(--bg1) 0%,var(--bg2) 40%,var(--bg3) 100%);
-}
-.page{width:min(1450px,96%);margin:auto;padding:20px 0 18px}
-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}
-.brand{display:flex;align-items:center;gap:15px}
-.logo{width:68px;height:68px;border-radius:15px;background:#073f91;border:2px solid #23dfff;display:grid;place-items:center;font-size:38px;box-shadow:0 0 18px #00d9ff55}
-h1{font-size:29px;margin:0 0 5px;text-shadow:2px 2px #082d70}
-.subtitle{font-size:12px;letter-spacing:.08em;font-weight:700}
-.clock{min-width:235px;border:1px solid #2a83d7;background:#063b86aa;border-radius:13px;padding:13px 17px}
-.clock small{display:block;opacity:.85;margin-bottom:5px}
-.clock strong{font-size:18px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:20px}
-.stat{border:2px solid var(--cyan);border-radius:15px;padding:18px 24px;background:#08449e;display:flex;align-items:center;gap:18px;min-height:108px}
-.stat .icon{width:65px;height:65px;border-radius:12px;display:grid;place-items:center;font-size:32px;background:#087cf0}
-.stat:nth-child(2){border-color:#00e995;background:#075d70}
-.stat:nth-child(2) .icon{background:#00bd76}
-.stat:nth-child(3){border-color:#a44aff;background:#27218e}
-.stat:nth-child(3) .icon{background:#8e4cf5}
-.stat:nth-child(4){border-color:#ffad24;background:#4d3732}
-.stat:nth-child(4) .icon{background:#f9a62e}
-.stat label{font-size:16px;font-weight:700;display:block;margin-bottom:5px}
-.stat strong{font-size:34px}
-.panel{background:linear-gradient(145deg,#0759b9,#063b91);border:2px solid #13d9ff;border-radius:17px;padding:20px;box-shadow:0 0 25px #00d9ff30}
-.panel-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:15px}
-.panel-title{display:flex;gap:14px;align-items:center}
-.panel-title .list-icon{font-size:34px}
-h2{font-size:22px;margin:0 0 5px}
-.panel-head p{margin:0;color:#d4edff;font-size:14px}
-button,input,select{font:inherit}
-button{border:0;border-radius:9px;padding:12px 18px;font-weight:700;cursor:pointer;color:white}
-button:hover{filter:brightness(1.12)}
-.refresh{background:#087df1;border:1px solid #4fcaff}
-.call-next{background:#00bd4c}
-.toolbar{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr auto;gap:12px;margin-bottom:15px}
-input,select{width:100%;min-width:0;border:1px solid #62ddff;border-radius:9px;padding:12px;background:#fff;color:#17233e;outline:none}
-input:focus,select:focus{box-shadow:0 0 0 3px #21d9ff55}
-.table-box{overflow-x:auto;border-radius:10px;background:#fff}
-table{width:100%;border-collapse:collapse;min-width:1100px;color:#17233e}
-th{background:#075cc4;color:#fff;text-align:left;padding:14px;font-size:13px;white-space:nowrap}
-td{padding:12px 14px;border-bottom:1px solid #d9e3ef;font-size:13px;background:#fff}
-tr:hover td{background:#f1f8ff}
-.ticket{font-weight:800;font-size:15px}
-.badge{display:inline-block;padding:7px 13px;border-radius:18px;font-weight:700;font-size:12px;white-space:nowrap}
-.badge.waiting{background:#cce9ff;color:#0871d2}
-.badge.ongoing{background:#c9f6dc;color:#07934d}
-.badge.completed{background:#e5d7ff;color:#713dff}
-.badge.cancelled,.badge.skipped{background:#ffd5de;color:#c5234e}
-.actions{display:flex;gap:7px;flex-wrap:wrap}
-.actions button{padding:9px 12px;font-size:12px}
-.btn-call{background:#00bd58}.btn-complete{background:#f49b14}.btn-edit{background:#087df1}.btn-cancel{background:#e83243}.btn-view{background:#7a8da5}
-.notice{display:none;margin:12px 0;padding:12px 14px;border-radius:9px;font-size:13px;line-height:1.45}
-.notice.show{display:block;background:#ffe0e7;color:#9b1639;border:1px solid #ff8da5}
-.notice.ok{display:block;background:#d8ffe7;color:#086d35;border:1px solid #57df92}
-.bottom{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-top:18px;font-size:13px;color:#d6eaff}
-.connection{display:flex;align-items:center;gap:8px}
-.dot{width:10px;height:10px;background:#00db78;border-radius:50%;display:inline-block}
-.empty{text-align:center;padding:30px!important;color:#61728b}
-.pagination{display:flex;gap:8px;align-items:center}
-.pagination button{background:#185da8;padding:9px 14px}
-.pagination button.active{background:#087df1}
-@media(max-width:1000px){
-  header{align-items:flex-start;flex-direction:column}
-  .clock{width:100%}
-  .stats{grid-template-columns:repeat(2,1fr)}
-  .toolbar{grid-template-columns:1fr 1fr}
-  .toolbar button{width:100%}
-}
-@media(max-width:600px){
-  .page{width:94%;padding-top:12px}
-  h1{font-size:21px}
-  .logo{width:55px;height:55px;font-size:28px}
-  .stats{gap:10px}
-  .stat{padding:13px;gap:10px;min-height:90px}
-  .stat .icon{width:42px;height:42px;font-size:22px}
-  .stat label{font-size:12px}
-  .stat strong{font-size:25px}
-  .panel{padding:12px}
-  .panel-head{align-items:flex-start;flex-direction:column}
-  .toolbar{grid-template-columns:1fr}
-  .bottom{align-items:flex-start;flex-direction:column}
-}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:radial-gradient(circle at 10% 0,#08cfff,#063d9a 35%,#03102e 100%);color:#fff;min-height:100vh}.wrap{width:min(1200px,95vw);margin:auto}header{padding:18px 0;display:flex;justify-content:space-between;align-items:center;gap:10px}h1{font-size:21px;margin:0;text-shadow:2px 2px #06245f}.sub{font-size:10px;margin-top:4px;letter-spacing:.08em}button,input,select{font:inherit;border-radius:8px;border:2px solid #6aeaff;padding:10px}button{cursor:pointer;font-weight:700}.primary{background:#05c93d;color:#fff}.blue{background:#087df1;color:#fff}.danger{background:#ef174b;color:#fff}.card{background:#e9fbff;color:#06164e;border:3px solid #00d9ff;border-radius:15px;padding:16px;box-shadow:0 0 22px #00d9ff66;margin-bottom:14px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#073d9d;color:#fff;border-radius:10px;padding:14px;text-align:center;border:2px solid #19dcff}.stat strong{display:block;font-size:30px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar input,.toolbar select{flex:1;min-width:160px}.tableWrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:850px}th,td{padding:10px;border-bottom:1px solid #9bddea;text-align:left;font-size:12px}th{background:#0758bd;color:#fff}td{background:#fff}.pill{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:700}.waiting{background:#ffe28b;color:#684800}.ongoing{background:#b6e0ff;color:#004a91}.done{background:#c8ffd6;color:#08752a}.cancelled{background:#ffd1dc;color:#a00035}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{padding:7px;font-size:10px}.notice{display:none;padding:10px;border-radius:8px;margin:8px 0;font-size:12px}.notice.show{display:block;background:#ffdce5;color:#a00035;border:2px solid #ff6688}label{display:block;font-size:11px;font-weight:700;margin:10px 0 4px}.hidden{display:none!important}.muted{font-size:11px;color:#55719c}@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}header{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
-<div class="page">
-<header>
-  <div class="brand">
-    <div class="logo">🔥</div>
-    <div>
-      <h1>MEMBERS SERVICES QUEUEING SYSTEM</h1>
-      <div class="subtitle">STAFF DASHBOARD • LIVE COUNTER MANAGEMENT</div>
-    </div>
-  </div>
-  <div class="clock">
-    <small id="dateLabel">Loading date...</small>
-    <strong id="timeLabel">--:--:--</strong>
-  </div>
-</header>
+<div class="wrap">
+<header><div><h1>MEMBERS SERVICES QUEUEING SYSTEM</h1><div class="sub">STAFF QUEUE DASHBOARD • LIVE COUNTER MANAGEMENT</div></div><div style="display:flex;align-items:center;gap:8px"><span id="staffName" style="font-size:12px;font-weight:700"></span><button class="danger" id="logoutBtn">LOG OUT</button></div></header>
 
+<main id="dashboard">
 <section class="stats">
-  <div class="stat"><div class="icon">👥</div><div><label>Waiting</label><strong id="waitingCount">0</strong></div></div>
-  <div class="stat"><div class="icon">⚙️</div><div><label>Ongoing</label><strong id="ongoingCount">0</strong></div></div>
-  <div class="stat"><div class="icon">✓</div><div><label>Completed</label><strong id="completedCount">0</strong></div></div>
-  <div class="stat"><div class="icon">▥</div><div><label>Total Today</label><strong id="todayCount">0</strong></div></div>
+<div class="stat">Waiting<strong id="waitingCount">0</strong></div>
+<div class="stat">Ongoing<strong id="ongoingCount">0</strong></div>
+<div class="stat">Completed<strong id="doneCount">0</strong></div>
+<div class="stat">Total Today<strong id="totalCount">0</strong></div>
 </section>
 
-<section class="panel">
-  <div class="panel-head">
-    <div class="panel-title">
-      <div class="list-icon">☷</div>
-      <div><h2>Today's Queue</h2><p>Manage customer queue, call next, and update statuses in real time.</p></div>
-    </div>
-    <button class="refresh" id="refreshBtn">↻ Refresh</button>
-  </div>
-
-  <div class="toolbar">
-    <input id="searchInput" placeholder="Search ticket, customer, or service...">
-    <select id="statusFilter">
-      <option value="">All statuses</option>
-      <option value="Waiting">Waiting</option>
-      <option value="Ongoing">Ongoing</option>
-      <option value="Completed">Completed</option>
-      <option value="Cancelled">Cancelled</option>
-      <option value="Skipped">Skipped</option>
-    </select>
-    <select id="serviceFilter"><option value="">All services</option></select>
-    <select id="counterFilter"><option value="">All counters</option></select>
-    <button class="call-next" id="callNextBtn">🔊 Call Next</button>
-  </div>
-
-  <div id="notice" class="notice"></div>
-  <div class="table-box">
-    <table>
-      <thead>
-        <tr><th>#</th><th>Ticket</th><th>Customer</th><th>Services</th><th>Status</th><th>Joined</th><th>Counter</th><th>Actions</th></tr>
-      </thead>
-      <tbody id="queueBody"><tr><td colspan="8" class="empty">Loading queue records...</td></tr></tbody>
-    </table>
-  </div>
-
-  <div class="bottom">
-    <div id="entryLabel">Showing 0 entries</div>
-    <div class="pagination"><button id="prevBtn">‹ Previous</button><button class="active" id="pageNumber">1</button><button id="nextBtn">Next ›</button></div>
-  </div>
+<section class="card" style="margin-top:14px">
+<h2 style="margin:0 0 4px;font-size:18px;color:#063d9a">Today's Queue</h2>
+<div id="queueDate" class="muted" style="margin-bottom:12px"></div>
+<div class="toolbar">
+<input id="search" placeholder="Search ticket or customer">
+<select id="statusFilter"><option value="">All statuses</option><option>Waiting</option><option>Ongoing</option><option>Done</option><option>Cancelled</option></select>
+<select id="counterSelect"><option value="">Select counter</option></select>
+<button class="blue" id="refreshBtn">Refresh</button>
+<button class="primary" id="callNextBtn">Call Next</button>
+</div>
+<div class="notice" id="mainNotice"></div>
+<div class="tableWrap"><table><thead><tr><th>Ticket</th><th>Customer</th><th>Services</th><th>Status</th><th>Joined</th><th>Counter</th><th>Actions</th></tr></thead><tbody id="queueBody"></tbody></table></div>
 </section>
-
-<div class="bottom">
-  <div>© 2025 Members Services Queueing System. All rights reserved.</div>
-  <div class="connection"><span class="dot" id="connectionDot"></span><span id="connectionLabel">Connecting to Supabase...</span></div>
+</main>
 </div>
-</div>
-
 <script>
 const SUPABASE_URL='https://szjvzbsmkowpqezrvbqo.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-
+const SESSION_KEY='staff_session_token';
+const token=localStorage.getItem(SESSION_KEY);
 const $=id=>document.getElementById(id);
-let allTickets=[],counters=[],page=1;
-const pageSize=10;
-
-function esc(value){
-  return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let tickets=[],counters=[],staff=null;
+function notice(el,msg){el.textContent=msg;el.className='notice show'}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c] || c))}
+function pill(status){let c=(status||'').toLowerCase();return `<span class="pill ${c}">${esc(status)}</span>`}
+function selectedCounter(){return $('counterSelect').value||null}
+async function requireStaff(){
+  if(!token){location.replace('staff_login.html');return false}
+  const {data,error}=await db.rpc('verify_staff_session',{p_token:token});
+  if(error||!data?.valid){localStorage.removeItem(SESSION_KEY);location.replace('staff_login.html');return false}
+  staff=data;$('staffName').textContent='STAFF: '+data.username;return true
 }
-function todayString(){
-  const d=new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function normalizeStatus(value){
-  const s=String(value||'Waiting').toLowerCase();
-  if(['called','serving','ongoing'].includes(s)) return 'Ongoing';
-  if(['completed','done'].includes(s)) return 'Completed';
-  if(['cancelled','canceled'].includes(s)) return 'Cancelled';
-  if(s==='skipped') return 'Skipped';
-  return 'Waiting';
-}
-function statusClass(status){return normalizeStatus(status).toLowerCase();}
-function showNotice(message,good=false){
-  const el=$('notice');
-  el.textContent=message;
-  el.className='notice show'+(good?' ok':'');
-}
-function clearNotice(){$('notice').className='notice';}
-function setConnection(ok,label){
-  $('connectionDot').style.background=ok?'#00db78':'#ff4a62';
-  $('connectionLabel').textContent=label;
-}
-function updateClock(){
-  const d=new Date();
-  $('dateLabel').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  $('timeLabel').textContent=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-}
-function joinedValue(t){return t.joined_at||t.created_at||t.updated_at;}
-function joinedText(t){
-  const value=joinedValue(t);
-  if(!value)return '—';
-  return new Date(value).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-}
-function counterName(t){
-  const c=counters.find(x=>String(x.id)===String(t.counter_id));
-  return c?(c.counter_name||c.name||'Counter'):(t.counter_name||t.counter_id||'—');
-}
-function serviceText(t){return t.service_name||t.services||t.service||'—';}
-
 async function loadCounters(){
-  const {data,error}=await db.from('queue_counters').select('*');
-  if(error){console.warn('Counter query:',error.message);return;}
-  counters=data||[];
-  $('counterFilter').innerHTML='<option value="">All counters</option>'+
-    counters.filter(c=>c.is_active!==false).map(c=>`<option value="${esc(c.id)}">${esc(c.counter_name||c.name||'Counter')}</option>`).join('');
+  const {data,error}=await db.rpc('staff_get_queue_counters',{p_token:token});
+  if(error){notice($('mainNotice'),'Counter error: '+error.message);return}
+  counters=data||[];$('counterSelect').innerHTML='<option value="">Select counter</option>'+counters.filter(c=>c.is_active!==false).map(c=>`<option value="${c.id}">${esc(c.counter_name||c.name||('Counter '+c.id))}</option>`).join('');
 }
-
 async function loadTickets(){
-  clearNotice();
-  setConnection(false,'Loading from Supabase...');
-  // Do not order by a possibly missing column. Load first, then sort in JavaScript.
-  const {data,error}=await db.from('queue_tickets').select('*').limit(2000);
-  if(error){
-    console.error(error);
-    setConnection(false,'Supabase error');
-    showNotice('Unable to read queue_tickets: '+error.message);
-    allTickets=[];render();return;
-  }
-  allTickets=(data||[]).sort((a,b)=>{
-    const ad=new Date(joinedValue(a)||0).getTime(),bd=new Date(joinedValue(b)||0).getTime();
-    return bd-ad;
-  });
-  setConnection(true,'Connected to Supabase • '+allTickets.length+' records');
-  render();
+  $('queueDate').textContent='Date: '+new Date().toLocaleDateString('en-PH');const noticeEl=$('mainNotice');
+  const {data,error}=await db.rpc('staff_get_queue_tickets',{p_token:token});
+  if(error){notice(noticeEl,'Database error: '+error.message);tickets=[];render();return}
+  tickets=Array.isArray(data)?data:[];noticeEl.className='notice show';noticeEl.style.background='#d9ffe3';noticeEl.style.color='#08752a';noticeEl.style.border='2px solid #11bd45';noticeEl.textContent='Connected to Supabase. Records received: '+tickets.length;render();
 }
-
-function filteredTickets(){
-  const search=$('searchInput').value.trim().toLowerCase();
-  const status=$('statusFilter').value;
-  const service=$('serviceFilter').value;
-  const counter=$('counterFilter').value;
-  return allTickets.filter(t=>{
-    const text=`${t.ticket_number||''} ${t.customer_name||''} ${serviceText(t)}`.toLowerCase();
-    const normalized=normalizeStatus(t.status);
-    return (!search||text.includes(search)) &&
-      (!status||normalized===status) &&
-      (!service||serviceText(t)===service) &&
-      (!counter||String(t.counter_id||'')===counter);
-  });
-}
-function rebuildServiceFilter(){
-  const current=$('serviceFilter').value;
-  const services=[...new Set(allTickets.map(serviceText).filter(x=>x&&x!=='—'))].sort();
-  $('serviceFilter').innerHTML='<option value="">All services</option>'+services.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
-  if(services.includes(current))$('serviceFilter').value=current;
-}
-function render(){
-  rebuildServiceFilter();
-  const list=filteredTickets();
-  const waiting=allTickets.filter(t=>normalizeStatus(t.status)==='Waiting').length;
-  const ongoing=allTickets.filter(t=>normalizeStatus(t.status)==='Ongoing').length;
-  const completed=allTickets.filter(t=>normalizeStatus(t.status)==='Completed').length;
-  const today=todayString();
-  const totalToday=allTickets.filter(t=>String(t.queue_date||'').slice(0,10)===today).length;
-  $('waitingCount').textContent=waiting;
-  $('ongoingCount').textContent=ongoing;
-  $('completedCount').textContent=completed;
-  $('todayCount').textContent=totalToday;
-
-  const pages=Math.max(1,Math.ceil(list.length/pageSize));
-  if(page>pages)page=pages;
-  const rows=list.slice((page-1)*pageSize,page*pageSize);
-  $('queueBody').innerHTML=rows.length?rows.map((t,i)=>{
-    const status=normalizeStatus(t.status);
-    const actions=status==='Completed'||status==='Cancelled'||status==='Skipped'
-      ?`<button class="btn-view" onclick="viewTicket('${esc(t.id)}')">View</button>`
-      :`<button class="btn-call" onclick="changeStatus('${esc(t.id)}','Serving')">Call</button>
-        <button class="btn-complete" onclick="changeStatus('${esc(t.id)}','Completed')">Complete</button>
-        <button class="btn-cancel" onclick="changeStatus('${esc(t.id)}','Cancelled')">Cancel</button>`;
-    return `<tr>
-      <td>${(page-1)*pageSize+i+1}</td>
-      <td class="ticket">${esc(t.ticket_number||'—')}</td>
-      <td>${esc(t.customer_name||'—')}</td>
-      <td>${esc(serviceText(t))}</td>
-      <td><span class="badge ${statusClass(status)}">${esc(status)}</span></td>
-      <td>${joinedText(t)}</td>
-      <td>${esc(counterName(t))}</td>
-      <td><div class="actions">${actions}</div></td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="8" class="empty">No queue records found.</td></tr>';
-
-  $('entryLabel').textContent=`Showing ${list.length?((page-1)*pageSize+1):0} to ${Math.min(page*pageSize,list.length)} of ${list.length} entries`;
-  $('pageNumber').textContent=page;
-  $('prevBtn').disabled=page<=1;
-  $('nextBtn').disabled=page>=pages;
-}
-async function changeStatus(id,status){
-  const patch={status};
-  const selected=$('counterFilter').value||null;
-  if(status==='Serving'||status==='Called'){
-    patch.called_at=new Date().toISOString();
-    if(selected)patch.counter_id=selected;
-  }
-  if(status==='Completed')patch.completed_at=new Date().toISOString();
-  const {error}=await db.from('queue_tickets').update(patch).eq('id',id);
-  if(error){showNotice('Update failed: '+error.message);return;}
-  showNotice('Ticket updated successfully.',true);
-  await loadTickets();
-}
-async function callNext(){
-  const next=allTickets.find(t=>normalizeStatus(t.status)==='Waiting' &&
-    String(t.queue_date||'').slice(0,10)===todayString());
-  if(!next){showNotice('There are no waiting customers for today.');return;}
-  await changeStatus(next.id,'Serving');
-}
-function viewTicket(id){
-  const t=allTickets.find(x=>String(x.id)===String(id));
-  if(t)alert(`Ticket: ${t.ticket_number||'—'}\nCustomer: ${t.customer_name||'—'}\nService: ${serviceText(t)}\nStatus: ${normalizeStatus(t.status)}\nJoined: ${joinedText(t)}`);
-}
-$('refreshBtn').onclick=loadTickets;
-$('callNextBtn').onclick=callNext;
-$('searchInput').oninput=()=>{page=1;render();};
-$('statusFilter').onchange=()=>{page=1;render();};
-$('serviceFilter').onchange=()=>{page=1;render();};
-$('counterFilter').onchange=()=>{page=1;render();};
-$('prevBtn').onclick=()=>{if(page>1){page--;render();}};
-$('nextBtn').onclick=()=>{if(page<Math.ceil(filteredTickets().length/pageSize)){page++;render();}};
-
-updateClock();
-setInterval(updateClock,1000);
-(async()=>{
-  await loadCounters();
-  await loadTickets();
-  setInterval(loadTickets,15000);
-})();
+function displayStatus(status){const s=String(status||'Waiting').toLowerCase();if(s==='called'||s==='serving'||s==='ongoing')return'Ongoing';if(s==='completed'||s==='done')return'Completed';if(s==='skipped'||s==='cancelled')return s==='cancelled'?'Cancelled':'Skipped';return'Waiting'}
+function statusClass(status){const s=displayStatus(status);return s==='Completed'?'done':s==='Skipped'||s==='Cancelled'?'cancelled':s.toLowerCase()}
+function render(){let search=$('search').value.toLowerCase(),filter=$('statusFilter').value;let filtered=tickets.filter(t=>{const shown=displayStatus(t.status);return(!filter||filter===shown||(filter==='Done'&&shown==='Completed'))&&(!search||`${t.ticket_number} ${t.customer_name} ${t.service_name}`.toLowerCase().includes(search))});$('waitingCount').textContent=tickets.filter(t=>displayStatus(t.status)==='Waiting').length;$('ongoingCount').textContent=tickets.filter(t=>displayStatus(t.status)==='Ongoing').length;$('doneCount').textContent=tickets.filter(t=>displayStatus(t.status)==='Completed').length;$('totalCount').textContent=tickets.length;$('queueBody').innerHTML=filtered.map(t=>`<tr><td><b>${esc(t.ticket_number)}</b></td><td>${esc(t.customer_name)}</td><td>${esc(t.service_name||'—')}</td><td><span class="pill ${statusClass(t.status)}">${esc(displayStatus(t.status))}</span></td><td>${(t.joined_at||t.created_at)?new Date(t.joined_at||t.created_at).toLocaleTimeString():'—'}</td><td>${esc(counters.find(c=>c.id===t.counter_id)?.counter_name||t.counter_id||'—')}</td><td><div class="actions"><button class="blue" onclick="setStatus('${t.id}','Serving')">Call</button><button class="primary" onclick="setStatus('${t.id}','Completed')">Complete</button><button class="danger" onclick="setStatus('${t.id}','Skipped')">Skip</button></div></td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center">No queue tickets found.</td></tr>'}
+async function setStatus(id,status){const {error}=await db.rpc('staff_update_queue_ticket',{p_token:token,p_ticket_id:id,p_status:status,p_counter_id:selectedCounter()||null});if(error){notice($('mainNotice'),error.message);return}await loadTickets()}
+async function callNext(){let next=tickets.find(t=>displayStatus(t.status)==='Waiting');if(!next){notice($('mainNotice'),'There are no waiting customers.');return}await setStatus(next.id,'Serving')}
+$('refreshBtn').onclick=loadTickets;$('callNextBtn').onclick=callNext;$('search').oninput=render;$('statusFilter').onchange=render;
+$('logoutBtn').onclick=async()=>{try{await db.rpc('logout_staff',{p_token:token})}finally{localStorage.removeItem(SESSION_KEY);location.replace('staff_login.html')}};
+(async()=>{if(await requireStaff()){await loadCounters();await loadTickets();setInterval(loadTickets,10000)}})();
 </script>
 </body>
 </html>
