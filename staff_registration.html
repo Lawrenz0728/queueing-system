@@ -35,12 +35,14 @@ button:hover{filter:brightness(1.1)}button:disabled{opacity:.65;cursor:not-allow
     <label for="password">Password</label>
     <input id="password" type="password" placeholder="Create a password" minlength="6" required autocomplete="new-password">
 
+    <label for="passcode">Registration Passcode</label>
+    <input id="passcode" type="password" placeholder="Enter staff registration passcode" required autocomplete="off">
+
     <label for="confirmPassword">Confirm Password</label>
     <input id="confirmPassword" type="password" placeholder="Re-enter your password" minlength="6" required autocomplete="new-password">
 
     <button id="registerBtn" type="submit">CREATE STAFF ACCOUNT</button>
     <div id="message" role="alert"></div>
-    <button id="resendBtn" type="button">RESEND CONFIRMATION EMAIL</button>
   </form>
 
   <div class="links">Already registered? <a href="staff_login.html">Sign in here</a></div>
@@ -51,10 +53,13 @@ button:hover{filter:brightness(1.1)}button:disabled{opacity:.65;cursor:not-allow
 const SUPABASE_URL='https://szjvzbsmkowpqezrvbqo.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+// CHANGE THIS to your private staff registration passcode.
+// NOTE: A passcode stored in a public HTML file can be discovered by someone who inspects the page source.
+const STAFF_REGISTRATION_PASSCODE='CHANGE-ME-2026';
+
 const msg=document.getElementById('message');
 const btn=document.getElementById('registerBtn');
-const resendBtn=document.getElementById('resendBtn');
-const REDIRECT_URL=new URL('staff_login.html',window.location.href).href;
 
 function show(text,success=false){
   msg.textContent=text;
@@ -69,18 +74,17 @@ document.getElementById('registerForm').addEventListener('submit',async e=>{
   const email=document.getElementById('email').value.trim();
   const password=document.getElementById('password').value;
   const confirmPassword=document.getElementById('confirmPassword').value;
+  const passcode=document.getElementById('passcode').value;
 
+  if(passcode!==STAFF_REGISTRATION_PASSCODE){show('Registration failed: Invalid staff registration passcode.');return;}
   if(password!==confirmPassword){show('Passwords do not match.');return;}
   if(password.length<6){show('Password must contain at least 6 characters.');return;}
 
   btn.disabled=true;
   btn.textContent='CREATING ACCOUNT...';
 
-  const {data,error}=await db.auth.signUp({
-    email,
-    password,
-    options:{emailRedirectTo:REDIRECT_URL}
-  });
+  // Email confirmation must be disabled in Supabase Authentication settings.
+  const {data,error}=await db.auth.signUp({email,password});
 
   if(error){
     show('Registration failed: '+error.message);
@@ -90,36 +94,15 @@ document.getElementById('registerForm').addEventListener('submit',async e=>{
   }
 
   if(data.session){
-    show('Registration successful. Redirecting to the staff dashboard...',true);
-    setTimeout(()=>location.replace('staff_queue_dashboard.html'),1200);
+    show('Registration successful! Opening staff dashboard...',true);
+    setTimeout(()=>location.replace('staff_queue_dashboard.html'),900);
   }else{
-    show('Registration successful. Please check your email to confirm your account, then sign in.',true);
-    resendBtn.style.display='block';
-    resendBtn.dataset.email=email;
+    // If no session is returned, Supabase is still requiring email confirmation.
+    show('Account created, but Supabase is still requiring email confirmation. Turn OFF “Confirm email” in Supabase Authentication settings.',false);
     btn.disabled=false;
     btn.textContent='CREATE STAFF ACCOUNT';
   }
 });
-
-resendBtn.addEventListener('click',async()=>{
-  const email=resendBtn.dataset.email || document.getElementById('email').value.trim();
-  if(!email){show('Please enter your staff email first.');return;}
-  resendBtn.disabled=true;
-  resendBtn.textContent='SENDING...';
-  const {error}=await db.auth.resend({
-    type:'signup',
-    email,
-    options:{emailRedirectTo:REDIRECT_URL}
-  });
-  if(error){
-    show('Could not resend confirmation email: '+error.message);
-  }else{
-    show('Confirmation email sent. Please check your inbox and spam/junk folder.',true);
-  }
-  resendBtn.disabled=false;
-  resendBtn.textContent='RESEND CONFIRMATION EMAIL';
-});
-
 </script>
 </body>
 </html>
