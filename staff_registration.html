@@ -17,6 +17,7 @@ button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;backgr
 button:hover{filter:brightness(1.1)}button:disabled{opacity:.65;cursor:not-allowed}
 #message{display:none;margin-top:15px;padding:11px;border-radius:8px;background:#ffe0e7;color:#9b1639;font-size:13px;line-height:1.4}
 #message.success{background:#def8e7;color:#176b3a}
+#resendBtn{display:none;background:#0b8fbd;margin-top:10px;font-size:13px;padding:11px}
 .links{text-align:center;margin-top:18px;font-size:13px}.links a{color:#0754b9;font-weight:700;text-decoration:none}.links a:hover{text-decoration:underline}
 .footer{text-align:center;color:#71809a;font-size:11px;margin-top:20px}
 </style>
@@ -39,6 +40,7 @@ button:hover{filter:brightness(1.1)}button:disabled{opacity:.65;cursor:not-allow
 
     <button id="registerBtn" type="submit">CREATE STAFF ACCOUNT</button>
     <div id="message" role="alert"></div>
+    <button id="resendBtn" type="button">RESEND CONFIRMATION EMAIL</button>
   </form>
 
   <div class="links">Already registered? <a href="staff_login.html">Sign in here</a></div>
@@ -51,6 +53,8 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const msg=document.getElementById('message');
 const btn=document.getElementById('registerBtn');
+const resendBtn=document.getElementById('resendBtn');
+const REDIRECT_URL=new URL('staff_login.html',window.location.href).href;
 
 function show(text,success=false){
   msg.textContent=text;
@@ -75,7 +79,7 @@ document.getElementById('registerForm').addEventListener('submit',async e=>{
   const {data,error}=await db.auth.signUp({
     email,
     password,
-    options:{emailRedirectTo:window.location.origin+'/queueing-system/staff_login.html'}
+    options:{emailRedirectTo:REDIRECT_URL}
   });
 
   if(error){
@@ -90,10 +94,32 @@ document.getElementById('registerForm').addEventListener('submit',async e=>{
     setTimeout(()=>location.replace('staff_queue_dashboard.html'),1200);
   }else{
     show('Registration successful. Please check your email to confirm your account, then sign in.',true);
+    resendBtn.style.display='block';
+    resendBtn.dataset.email=email;
     btn.disabled=false;
     btn.textContent='CREATE STAFF ACCOUNT';
   }
 });
+
+resendBtn.addEventListener('click',async()=>{
+  const email=resendBtn.dataset.email || document.getElementById('email').value.trim();
+  if(!email){show('Please enter your staff email first.');return;}
+  resendBtn.disabled=true;
+  resendBtn.textContent='SENDING...';
+  const {error}=await db.auth.resend({
+    type:'signup',
+    email,
+    options:{emailRedirectTo:REDIRECT_URL}
+  });
+  if(error){
+    show('Could not resend confirmation email: '+error.message);
+  }else{
+    show('Confirmation email sent. Please check your inbox and spam/junk folder.',true);
+  }
+  resendBtn.disabled=false;
+  resendBtn.textContent='RESEND CONFIRMATION EMAIL';
+});
+
 </script>
 </body>
 </html>
