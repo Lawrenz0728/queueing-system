@@ -179,16 +179,11 @@ function render(){
 }
 
 async function load(){
-  const [queueResult,counterResult]=await Promise.all([
-    db.from('queue_tickets').select('*').limit(1000),
-    db.from('queue_counters').select('id,counter_name,is_active')
-  ]);
-  const {data,error}=queueResult;
-  if(error){$('connection').textContent='DATABASE ERROR';console.error(error);return}
-
-  if(!counterResult.error){
-    counterNames={};
-    (counterResult.data||[]).forEach(c=>{counterNames[String(c.id)]=c.counter_name});
+  const {data,error}=await db.from('queue_tickets').select('*').limit(1000);
+  if(error){
+    $('connection').textContent='DATABASE ERROR';
+    console.error(error);
+    return;
   }
 
   const today=localDate();
