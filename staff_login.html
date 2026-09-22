@@ -28,7 +28,7 @@ label{display:block;font-weight:700;font-size:13px;margin:15px 0 7px}input{width
 <input id="password" type="password" placeholder="Enter your password" required autocomplete="current-password">
 <button id="loginBtn" type="submit">SIGN IN</button>
 <div id="message" role="alert"></div>
-<button id="resendBtn" type="button">RESEND CONFIRMATION EMAIL</button>
+
 </form>
 <div class="links">New staff? <a href="staff_registration.html">Register here</a></div>
 <div class="footer">Authorized staff only</div>
@@ -38,20 +38,14 @@ const SUPABASE_URL='https://szjvzbsmkowpqezrvbqo.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const msg=document.getElementById('message');
-const resendBtn=document.getElementById('resendBtn');
 const loginBtn=document.getElementById('loginBtn');
 const emailInput=document.getElementById('email');
 const passwordInput=document.getElementById('password');
-const REDIRECT_URL=new URL('staff_login.html',window.location.href).href;
 
 function show(text,success=false){
   msg.textContent=text;
   msg.className=success?'success':'';
   msg.style.display='block';
-}
-function isUnconfirmedError(error){
-  const t=(error?.message||'').toLowerCase();
-  return t.includes('email not confirmed') || t.includes('email_not_confirmed');
 }
 
 (async()=>{
@@ -62,7 +56,6 @@ function isUnconfirmedError(error){
 document.getElementById('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   msg.style.display='none';
-  resendBtn.style.display='none';
   loginBtn.disabled=true;
   loginBtn.textContent='SIGNING IN...';
 
@@ -72,33 +65,11 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
 
   if(error){
     show('Login failed: '+error.message);
-    if(isUnconfirmedError(error)) resendBtn.style.display='block';
     loginBtn.disabled=false;
     loginBtn.textContent='SIGN IN';
     return;
   }
   location.replace('staff_queue_dashboard.html');
-});
-
-resendBtn.addEventListener('click',async()=>{
-  const email=emailInput.value.trim();
-  if(!email){show('Please enter your staff email first.');return;}
-
-  resendBtn.disabled=true;
-  resendBtn.textContent='SENDING...';
-  const {error}=await db.auth.resend({
-    type:'signup',
-    email,
-    options:{emailRedirectTo:REDIRECT_URL}
-  });
-
-  if(error){
-    show('Could not resend confirmation email: '+error.message);
-  }else{
-    show('Confirmation email sent. Please check your inbox and spam/junk folder.',true);
-  }
-  resendBtn.disabled=false;
-  resendBtn.textContent='RESEND CONFIRMATION EMAIL';
 });
 </script>
 </body>
