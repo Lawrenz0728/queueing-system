@@ -1,107 +1,63 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Staff Registration | Members Services Queueing System</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Staff Registration | 1PNX Piloting Services</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:Arial,sans-serif;background:linear-gradient(120deg,#08b9ec,#0754b9 48%,#061b55);padding:20px}
-.card{width:min(430px,100%);background:#fff;border:3px solid #13d9ff;border-radius:22px;padding:32px;box-shadow:0 15px 45px #001a5555;color:#14264b}
-.logo{width:76px;height:76px;margin:0 auto 15px;display:grid;place-items:center;border-radius:18px;background:#0754b9;color:#fff;font-size:40px;border:2px solid #13d9ff}
-h1{text-align:center;color:#0754b9;font-size:25px;margin:0 0 8px}.sub{text-align:center;color:#60708b;font-size:13px;margin-bottom:25px}
-label{display:block;font-weight:700;font-size:13px;margin:15px 0 7px}
-input{width:100%;padding:13px;border:1px solid #8cb8db;border-radius:9px;font-size:15px}
-button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;background:#0754b9;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
-button:hover{filter:brightness(1.1)}button:disabled{opacity:.65;cursor:not-allowed}
-#message{display:none;margin-top:15px;padding:11px;border-radius:8px;background:#ffe0e7;color:#9b1639;font-size:13px;line-height:1.4}
-#message.success{background:#def8e7;color:#176b3a}
-.links{text-align:center;margin-top:18px;font-size:13px}.links a{color:#0754b9;font-weight:700;text-decoration:none}.links a:hover{text-decoration:underline}
-.footer{text-align:center;color:#71809a;font-size:11px;margin-top:20px}
-</style>
-</head>
+:root{--cyan:#19d9ff;--blue:#168cff;--card:rgba(4,22,42,.9);--text:#f4fbff;--muted:#91abc2}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:var(--text);display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(circle at 15% 25%,#0b5d8c55,transparent 30%),radial-gradient(circle at 85% 75%,#008dff44,transparent 32%),linear-gradient(135deg,#031227,#06315b 48%,#020a18)}
+.brand{position:fixed;top:28px;left:34px;display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:1px}.brand small{display:block;color:#7ca0bd;font-size:10px;letter-spacing:2px;margin-top:2px}.wing{font-size:34px;color:#19d9ff;filter:drop-shadow(0 0 8px #19d9ff88)}
+.card{width:min(500px,100%);background:var(--card);border:1px solid #17cfff;border-radius:28px;padding:34px 38px;box-shadow:0 0 0 1px #0c6c9b55 inset,0 25px 80px #0009,0 0 45px #00cfff20;backdrop-filter:blur(16px)}
+.logo{width:78px;height:78px;margin:0 auto 17px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(145deg,#0d8dff,#063e9c);border:1px solid #2ae4ff;box-shadow:0 0 28px #00cfff44;font-size:42px}
+h1{text-align:center;margin:0;font-size:29px}h1 span{color:var(--cyan)}.sub{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 23px}.divider{height:1px;background:linear-gradient(90deg,transparent,#18cfff,transparent);margin-bottom:20px}
+label{display:block;font-size:13px;font-weight:700;margin:14px 0 7px}input{width:100%;height:48px;padding:0 15px;border-radius:12px;border:1px solid #2e6f99;background:#071d35;color:#fff;outline:none;font-size:15px}input::placeholder{color:#6f8da5}input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #18cfff22}
+button{width:100%;height:52px;margin-top:23px;border:0;border-radius:13px;color:#fff;font-weight:800;font-size:14px;cursor:pointer;background:linear-gradient(90deg,#087cff,#12d9c9);box-shadow:0 8px 25px #079fff44}button:disabled{opacity:.6;cursor:not-allowed}
+#message{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.4;background:#3a1320;border:1px solid #ff5e77;color:#ffb4bf}#message.success{background:#07392f;border-color:#1be0bd;color:#a8ffed}
+.links{text-align:center;margin-top:19px;color:#a4bbcd;font-size:13px}.links a{color:#20d9ff;text-decoration:none;font-weight:800}.footer{text-align:center;margin-top:23px;color:#66849d;font-size:10px;letter-spacing:2px}.back{position:fixed;bottom:24px;left:34px;color:#7395ad;font-size:12px}.back a{color:#20cfff;text-decoration:none}
+@media(max-width:600px){body{display:flex;flex-direction:column}.brand{position:static;margin-bottom:18px}.back{position:static;margin-top:18px}.card{padding:29px 23px}h1{font-size:25px}}
+</style></head>
 <body>
+<div class="brand"><div class="wing">✦</div><div>1PNX<small>PILOTING SERVICES</small></div></div>
 <div class="card">
-  <div class="logo">📝</div>
-  <h1>STAFF REGISTRATION</h1>
-  <div class="sub">Members Services Queueing System</div>
-
-  <form id="registerForm">
-    <label for="email">Staff Email</label>
-    <input id="email" type="email" placeholder="staff@example.com" required autocomplete="email">
-
-    <label for="password">Password</label>
-    <input id="password" type="password" placeholder="Create a password" minlength="6" required autocomplete="new-password">
-
-    <label for="passcode">Registration Passcode</label>
-    <input id="passcode" type="password" placeholder="Enter staff registration passcode" required autocomplete="off">
-
-    <label for="confirmPassword">Confirm Password</label>
-    <input id="confirmPassword" type="password" placeholder="Re-enter your password" minlength="6" required autocomplete="new-password">
-
-    <button id="registerBtn" type="submit">CREATE STAFF ACCOUNT</button>
-    <div id="message" role="alert"></div>
-  </form>
-
-  <div class="links">Already registered? <a href="staff_login.html">Sign in here</a></div>
-  <div class="footer">Staff registration</div>
+<div class="logo">📝</div>
+<h1>STAFF <span>REGISTRATION</span></h1>
+<div class="sub">Create a staff account to access the queueing system</div>
+<div class="divider"></div>
+<form id="registerForm">
+<label for="username">Username</label>
+<input id="username" type="text" placeholder="Enter your username" required maxlength="50" autocomplete="username">
+<label for="password">Password</label>
+<input id="password" type="password" placeholder="Create your password" minlength="6" required autocomplete="new-password">
+<label for="confirmPassword">Confirm Password</label>
+<input id="confirmPassword" type="password" placeholder="Confirm your password" minlength="6" required autocomplete="new-password">
+<label for="passcode">Registration Passcode</label>
+<input id="passcode" type="password" placeholder="Enter staff registration passcode" required autocomplete="off">
+<button id="registerBtn" type="submit">CREATE STAFF ACCOUNT</button>
+<div id="message" role="alert"></div>
+</form>
+<div class="links">Already registered? <a href="staff_login.html">Sign in here →</a></div>
+<div class="footer">STAFF ACCESS ONLY</div>
 </div>
-
+<div class="back"><a href="index.html">← Back to Home</a></div>
 <script>
 const SUPABASE_URL='https://szjvzbsmkowpqezrvbqo.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fYCD8HfyfJPWwjZ8HiC8QA_G2TKqStx';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-
-// CHANGE THIS to your private staff registration passcode.
-// NOTE: A passcode stored in a public HTML file can be discovered by someone who inspects the page source.
 const STAFF_REGISTRATION_PASSCODE='CHANGE-ME-2026';
-
-const msg=document.getElementById('message');
-const btn=document.getElementById('registerBtn');
-
-function show(text,success=false){
-  msg.textContent=text;
-  msg.className=success?'success':'';
-  msg.style.display='block';
-}
-
-document.getElementById('registerForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  msg.style.display='none';
-
-  const email=document.getElementById('email').value.trim();
-  const password=document.getElementById('password').value;
-  const confirmPassword=document.getElementById('confirmPassword').value;
-  const passcode=document.getElementById('passcode').value;
-
-  if(passcode!==STAFF_REGISTRATION_PASSCODE){show('Registration failed: Invalid staff registration passcode.');return;}
-  if(password!==confirmPassword){show('Passwords do not match.');return;}
-  if(password.length<6){show('Password must contain at least 6 characters.');return;}
-
-  btn.disabled=true;
-  btn.textContent='CREATING ACCOUNT...';
-
-  // Email confirmation must be disabled in Supabase Authentication settings.
-  const {data,error}=await db.auth.signUp({email,password});
-
-  if(error){
-    show('Registration failed: '+error.message);
-    btn.disabled=false;
-    btn.textContent='CREATE STAFF ACCOUNT';
-    return;
-  }
-
-  if(data.session){
-    show('Registration successful! Opening staff dashboard...',true);
-    setTimeout(()=>location.replace('staff_queue_dashboard.html'),900);
-  }else{
-    // If no session is returned, Supabase is still requiring email confirmation.
-    show('Account created, but Supabase is still requiring email confirmation. Turn OFF “Confirm email” in Supabase Authentication settings.',false);
-    btn.disabled=false;
-    btn.textContent='CREATE STAFF ACCOUNT';
-  }
+function authEmail(username){return username.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'')+'@staff.1pnx.local';}
+const form=document.getElementById('registerForm'),msg=document.getElementById('message'),btn=document.getElementById('registerBtn');
+function show(t,ok=false){msg.textContent=t;msg.className=ok?'success':'';msg.style.display='block'}
+form.addEventListener('submit',async e=>{e.preventDefault();msg.style.display='none';
+ const username=document.getElementById('username').value.trim();const password=document.getElementById('password').value;const confirm=document.getElementById('confirmPassword').value;const passcode=document.getElementById('passcode').value;
+ if(!/^[a-zA-Z0-9._-]{3,50}$/.test(username)){show('Username must be 3-50 characters and use only letters, numbers, dot, underscore, or hyphen.');return}
+ if(password.length<6){show('Password must contain at least 6 characters.');return}
+ if(password!==confirm){show('Passwords do not match.');return}
+ if(passcode!==STAFF_REGISTRATION_PASSCODE){show('Registration failed: Invalid staff registration passcode.');return}
+ btn.disabled=true;btn.textContent='CREATING ACCOUNT...';
+ const {data,error}=await db.auth.signUp({email:authEmail(username),password});
+ if(error){let t=error.message||'Unable to create account.';if(/rate limit|email/i.test(t))t='Registration failed. Supabase is currently rate-limiting account creation. Please wait before trying again.';show(t);btn.disabled=false;btn.textContent='CREATE STAFF ACCOUNT';return}
+ if(!data.session){show('Account was created, but Supabase did not return a session. Make sure “Confirm email” is OFF in Authentication → Sign In / Providers.');btn.disabled=false;btn.textContent='CREATE STAFF ACCOUNT';return}
+ show('Registration successful! Opening staff dashboard...',true);setTimeout(()=>location.replace('staff_queue_dashboard.html'),700);
 });
-</script>
-</body>
-</html>
+</script></body></html>
